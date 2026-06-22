@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+APP_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+
+source "$APP_DIR/lib/ui.sh"
+source "$APP_DIR/lib/data.sh"
+source "$APP_DIR/lib/actions.sh"
+source "$APP_DIR/lib/screens.sh"
+
+main() {
+  ui_require_gum
+  screen_main
+}
+
+main "$@"
