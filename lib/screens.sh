@@ -17,10 +17,10 @@ screen_main() {
         screen_reading
         ;;
       "Thinking (not available yet)")
-        action_not_available "Thinking"
+        action_not_implemented "open Thinking"
         ;;
       "Quit"|"")
-        exit 0
+        action_quit
         ;;
     esac
   done
@@ -31,78 +31,71 @@ screen_reading() {
     ui_title "Reading"
 
     choice="$(
-      printf '%s\n' \
-        "Reopen last session" \
-        "See books" \
-        "Back" \
-        "Quit" |
-      gum choose
-    )"
-
-    case "$choice" in
-      "Reopen last session")
-        action_not_implemented "Reopen last session"
-        ;;
-      "See books")
-        screen_books
-        ;;
-      "Back")
-        return 0
-        ;;
-      "Quit"|"")
-        exit 0
-        ;;
-    esac
-  done
-}
-
-screen_books() {
-  while true; do
-    ui_title "Books"
-
-    summary="$(
       {
         data_list_summaries
+        printf '%s\n' " "
+        printf '%s\n' "Add new book"
+        printf '%s\n' "  "
         printf '%s\n' "Back" "Quit"
       } | gum choose
     )"
 
-    case "$summary" in
+    case "$choice" in
+      " " | "  ")
+        ;;
+      "Add new book")
+        action_add_new_book
+        ;;
       "Back")
         return 0
         ;;
       "Quit"|"")
-        exit 0
+        action_quit
         ;;
       *)
-        screen_summary "$summary"
+        screen_book "$choice"
         ;;
     esac
   done
 }
 
-screen_summary() {
+screen_book() {
   local summary="$1"
 
   while true; do
     ui_title "$summary"
 
-    section="$(
+    choice="$(
       {
+        printf '%s\n' \
+          "Read book" \
+          "Manage book files"
+        printf '%s\n' " "
         data_list_sections "$summary"
-        printf '%s\n' "Back" "Quit"
+        printf '%s\n' "  "
+        printf '%s\n' \
+          "Back" \
+          "Quit"
       } | gum choose
     )"
 
-    case "$section" in
+    case "$choice" in
+      " " | "  ")
+        ;;
+      "Read book")
+        action_launch_book_reading_session "$summary"
+        ;;
+      "Manage book files")
+        action_manage_book_files "$summary"
+        ;;
       "Back")
         return 0
         ;;
       "Quit"|"")
-        exit 0
+        action_quit
         ;;
       *)
-        screen_section "$summary" "$section"
+        screen_section "$summary" "$choice"
         ;;
     esac
   done
@@ -116,25 +109,31 @@ screen_section() {
     ui_title "$summary / $section"
 
     choice="$(
-      printf '%s\n' \
-        "Generate section files" \
-        "Review text for section audio" \
-        "Generate section audio" \
-        "Launch reading session" \
-        "Back" \
-        "Quit" |
-      gum choose
+      {
+        printf '%s\n' \
+          "Read section" \
+          "Manage section files"
+        printf '%s\n' " "
+        printf '%s\n' \
+          "Back" \
+          "Quit"
+      } | gum choose
     )"
 
     case "$choice" in
+      " ")
+        ;;
+      "Read section")
+        action_launch_section_reading_session "$summary" "$section"
+        ;;
+      "Manage section files")
+        action_manage_section_files "$summary" "$section"
+        ;;
       "Back")
         return 0
         ;;
       "Quit"|"")
-        exit 0
-        ;;
-      *)
-        action_not_implemented "$choice"
+        action_quit
         ;;
     esac
   done
